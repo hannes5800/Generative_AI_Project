@@ -7,5 +7,4 @@ project_root/
   |  indexer.py     # chunking + embeddings + retrieval
   |  pipeline.py    # LLM pipeline (analysis ? answer ? review)
   |  imaging.py     # image generation tool
-  notebook/
-  |  main.ipynb     # final demo + explanations
+  main.ipynb        # final demo + explanations
