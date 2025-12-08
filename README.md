@@ -7,7 +7,7 @@ project_root/
     texts/          # extracted & cleaned text
   src/
     corpus.py       # loading and cleaning docs -> Person 1
-    indexer.py      # chunking + embeddings + retrieval -> Person 2
+    rag.py          # chunking + embeddings + retrieval -> Person 2
     pipeline.py     # LLM pipeline (analysis ? answer ? review) -> Person 3
     fine_tuning.py  # Optional: fine-tuning logic (train + load) -> Person 3
     imaging.py      # image generation tool -> Person 4
