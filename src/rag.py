@@ -129,7 +129,7 @@ def init_qdrant_collection(embeddings, collection_name: str = "crypto_whitepaper
 
     return client, COLLECTION
 
-def upload_to_qdrant(client, chunks, embeddings):
+def upload_to_qdrant(client, chunks, embeddings, collection):
     """
     Uploads text chunks and their embeddings to the specified Qdrant collection.
 
@@ -145,6 +145,7 @@ def upload_to_qdrant(client, chunks, embeddings):
     Returns:
         None
     """
+
     points = []
     
     # Loop through each chunk and its embedding
@@ -162,28 +163,9 @@ def upload_to_qdrant(client, chunks, embeddings):
         ))
 
     # Uploading all points to the Qdrant collection
-    client.upsert(COLLECTION, points)
+    client.upsert(collection, points)
     print(f"Uploaded {len(points)} chunks.")
 
-
-def upload_to_qdrant(client, chunks, embeddings):
-    points = []
-
-    for chunk, emb in zip(chunks, embeddings):
-        points.append(PointStruct(
-            id=str(uuid.uuid4()),  # UUID für Qdrant
-            vector=emb.tolist(),
-            payload={
-                "chunk_id": f"{chunk['project_id']}_{chunk['chunk_index']}",  # lesbare ID
-                "project_id": chunk["project_id"],
-                "source": chunk["source"],
-                "chunk_index": chunk["chunk_index"],
-                "text": chunk["text"]
-            }
-        ))
-        
-    client.upsert(COLLECTION, points)
-    print(f"Uploaded {len(points)} chunks.")
 
 def query_rag_flexible(question: str, top_k: int = 5) -> list[dict]:
     """
