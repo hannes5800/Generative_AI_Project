@@ -8,17 +8,19 @@ from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, Se
 import uuid
 
 # Creating chunks for the text
-def chunk_text(text: str, chunk_size: int = 600, overlap: int = 100) -> List[str]:
+def chunk_text(text: str, 
+               chunk_size: int = 600, 
+               overlap: int = 100) -> List[str]:
     """
     Splits a text into overlapping chunks.
 
     Args:
-        text (str): The text to split into chunks.
+        text (str): The text that will be split into chunks.
         chunk_size (int): Maximum number of words per chunk.
         overlap (int): Number of words that overlap between chunks.
 
     Returns:
-        list[str]: List of text chunks.
+        list[str]: List of chunks.
     """
 
     words = text.split()
@@ -37,21 +39,21 @@ def chunk_text(text: str, chunk_size: int = 600, overlap: int = 100) -> List[str
 
 def create_chunk_objects(docs: List[Dict]) -> List[Dict]:
     """
-    Converts a list of documents into structured overlapping text chunks for RAG systems.
+    Converts a list of documents into structured overlapping text chunks for RAG systems. Uses the chunk_text function.
 
     Args:
-        docs (List[Dict]): List of documents, each containing:
-            - 'project_id' (str): Identifier for the project.
+        docs (List[Dict]): List of documents,
+            - 'project_id' (str): Clear identifier for the project.
             - 'source_path' (str): Path to the original document.
-            - 'text' (str): Full textual content of the document.
+            - 'text' (str): Full corpus of the document.
 
     Returns:
-        List[Dict]: List of chunk dictionaries, each containing:
-            - 'id' (str): Unique chunk ID, e.g., 'bitcoin_0'.
-            - 'project_id' (str): Project this chunk belongs to.
+        List[Dict]: List of chunk dictionaries:
+            - 'id' (str): Unique chunk ID, e.g. 'bitcoin_0'.
+            - 'project_id' (str): Project to which the chunk belongs to.
             - 'source' (str): Original document path.
             - 'chunk_index' (int): Position of the chunk in the document.
-            - 'text' (str): Text content of the chunk.
+            - 'text' (str): Text corpus of the chunk.
     """
         
     all_chunks = []
@@ -78,13 +80,13 @@ def create_chunk_objects(docs: List[Dict]) -> List[Dict]:
 
     return all_chunks
 
-def embed_chunks(chunks: List[Dict]):
+def embed_chunks(chunks: List[Dict]) -> np.ndarray:
     """
-    Generates embeddings for a list of text chunks using a sentence transformer.
+    Generates embeddings for a list of chunks using a sentence transformer.
 
     Args:
-        chunks (List[Dict]): List of chunk dictionaries, each with:
-            - 'text' (str): Text content of the chunk.
+        chunks (List[Dict]): List of chunk dictionaries with:
+            - 'text' (str): Text corpus of the chunk.
 
     Returns:
         np.ndarray: Array of embeddings for each chunk, so it can be passed to an vector databases.
@@ -94,11 +96,15 @@ def embed_chunks(chunks: List[Dict]):
 
     # Extracts the text dictionary
     texts = [c["text"] for c in chunks]
+
     # Using the sentence encoder for all texts to create embeddings
     embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
+
     return embeddings
 
-def init_qdrant_collection(embeddings, collection_name: str = "crypto_whitepapers"):
+
+def init_qdrant_collection(embeddings: np.ndarray, 
+                           COLLECTION: str = "crypto_whitepapers") -> None:
     """
     Initialize a Qdrant collection via in-memory
 
@@ -114,9 +120,6 @@ def init_qdrant_collection(embeddings, collection_name: str = "crypto_whitepaper
     # Initializing an in-memory Qdrant client / could be replaced with docker
     client = QdrantClient(":memory:")
 
-    # Name of the collection
-    COLLECTION = "crypto_whitepapers"
-
     # Creates or overwrites a collcetion
     client.recreate_collection(
         collection_name=COLLECTION,
@@ -129,9 +132,12 @@ def init_qdrant_collection(embeddings, collection_name: str = "crypto_whitepaper
 
     return client, COLLECTION
 
-def upload_to_qdrant(client, chunks, embeddings, collection):
+def upload_to_qdrant(client: QdrantClient, 
+                     chunks, 
+                     embeddings: np.ndarray, 
+                     collection: str) -> None:
     """
-    Uploads text chunks and their embeddings to the specified Qdrant collection.
+    Uploads the chunks and their embeddings to the specified Qdrant collection.
 
     Args:
         client (QdrantClient): Pre-defined Qdrant client.
@@ -140,7 +146,7 @@ def upload_to_qdrant(client, chunks, embeddings, collection):
             - 'project_id' (str): Identifier of the project.
             - 'source' (str): Original document path.
             - 'text' (str): Text content of the chunk.
-        embeddings (np.ndarray): Embeddings corresponding to each chunk.
+        embeddings (np.ndarray): Embeddings for each each chunk.
 
     Returns:
         None
@@ -167,7 +173,11 @@ def upload_to_qdrant(client, chunks, embeddings, collection):
     print(f"Uploaded {len(points)} chunks.")
 
 
-def query_rag_flexible(question: str, top_k: int = 5) -> list[dict]:
+def retreive_rag(question: str, 
+                 client: QdrantClient, 
+                 COLLECTION: str, 
+                 top_k: int = 5) -> list[dict]:
+
     """
     Flexible retrieval of relevant chunks from Qdrant using semantic search.
 
@@ -182,27 +192,28 @@ def query_rag_flexible(question: str, top_k: int = 5) -> list[dict]:
         top_k (int): Maximum number of chunks to return.
 
     Returns:
-        output (list[dict]): List of chunk dictionaries, each with keys:
+        output (list[dict]): List of chunk dictionaries:
             - 'text' (str): Chunk text
             - 'project' (str): Project ID
             - 'doc_id' (str): Original document ID/path
             - 'chunk_id' (str): Unique chunk ID
-        project_hits (dict): Dictionary with project_id as key and number of hits as value
+            - 'score' (float): Similarity score
     """
 
-    # Embeds the question using the SentenceTransformer
-    question_embedding = model.encode(question).tolist()  # Liste für Qdrant
+    # Creating embeddings the question using the SentenceTransformer
+    model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+    question_embedding = model.encode(question).tolist()  # List for Qdrant
 
     # Searching the vector database collection for top_k similar chunks
     results = client.query_points(
         collection_name=COLLECTION,
         query=question_embedding,
-        limit=top_k
+        limit=top_k,
+        with_payload=True
     )
 
     # Result list
     output = []
-    project_hits = {}
     
     for point in results.points:
         payload = point.payload
@@ -211,12 +222,8 @@ def query_rag_flexible(question: str, top_k: int = 5) -> list[dict]:
             "project": payload.get("project_id", ""),
             "doc_id": payload.get("source", ""),
             "chunk_id": payload.get("chunk_id", ""),
+            "score": point.score 
         }
         output.append(chunk_dict)
 
-        # Projekt-Häufigkeiten zählen
-        pid = payload.get("project_id")
-        if pid:
-            project_hits[pid] = project_hits.get(pid, 0) + 1
-
-    return output, project_hits
+    return output
