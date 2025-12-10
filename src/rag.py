@@ -4,13 +4,11 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from tqdm import tqdm
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, SearchParams
+from qdrant_client.models import Distance, VectorParams, PointStruct 
 import uuid
 
 # Creating chunks for the text
-def chunk_text(text: str, 
-               chunk_size: int = 600, 
-               overlap: int = 100) -> List[str]:
+def chunk_text(text: str, chunk_size: int = 600, overlap: int = 100) -> List[str]:
     """
     Splits a text into overlapping chunks.
 
@@ -37,7 +35,9 @@ def chunk_text(text: str,
     
     return chunks
 
-def create_chunk_objects(docs: List[Dict]) -> List[Dict]:
+def create_chunk_objects(
+    docs: List[Dict]
+) -> List[Dict]:
     """
     Converts a list of documents into structured overlapping text chunks for RAG systems. Uses the chunk_text function.
 
@@ -103,8 +103,7 @@ def embed_chunks(chunks: List[Dict]) -> np.ndarray:
     return embeddings
 
 
-def init_qdrant_collection(embeddings: np.ndarray, 
-                           COLLECTION: str = "crypto_whitepapers") -> None:
+def init_qdrant_collection(embeddings: np.ndarray, COLLECTION: str = "crypto_whitepapers") -> None:
     """
     Initialize a Qdrant collection via in-memory
 
@@ -132,10 +131,7 @@ def init_qdrant_collection(embeddings: np.ndarray,
 
     return client, COLLECTION
 
-def upload_to_qdrant(client: QdrantClient, 
-                     chunks, 
-                     embeddings: np.ndarray, 
-                     collection: str) -> None:
+def upload_to_qdrant(client: QdrantClient, chunks, embeddings: np.ndarray, collection: str) -> None:
     """
     Uploads the chunks and their embeddings to the specified Qdrant collection.
 
@@ -173,10 +169,7 @@ def upload_to_qdrant(client: QdrantClient,
     print(f"Uploaded {len(points)} chunks.")
 
 
-def retreive_rag(question: str, 
-                 client: QdrantClient, 
-                 COLLECTION: str, 
-                 top_k: int = 5) -> list[dict]:
+def retrieve_rag(question: str, client: QdrantClient, COLLECTION: str, top_k: int = 5) -> list[dict]:
 
     """
     Flexible retrieval of relevant chunks from Qdrant using semantic search.
