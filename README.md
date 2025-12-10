@@ -4,7 +4,6 @@
 project_root/
   data/
     raw_pdfs/       # downloaded whitepapers
-    texts/          # extracted & cleaned text
   src/
     corpus.py       # loading and cleaning docs -> Person 1
     rag.py          # chunking + embeddings + retrieval -> Person 2
