@@ -1,14 +1,12 @@
-from typing import List, Dict
 import re
 from sentence_transformers import SentenceTransformer
 import numpy as np
-from tqdm import tqdm
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct 
 import uuid
 
 # Creating chunks for the text
-def chunk_text(text: str, chunk_size: int = 600, overlap: int = 100) -> List[str]:
+def chunk_text(text: str, chunk_size: int = 600, overlap: int = 100) -> list[str]:
     """
     Splits a text into overlapping chunks.
 
@@ -36,19 +34,19 @@ def chunk_text(text: str, chunk_size: int = 600, overlap: int = 100) -> List[str
     return chunks
 
 def create_chunk_objects(
-    docs: List[Dict]
-) -> List[Dict]:
+    docs: list[dict]
+) -> list[dict]:
     """
     Converts a list of documents into structured overlapping text chunks for RAG systems. Uses the chunk_text function.
 
     Args:
-        docs (List[Dict]): List of documents,
+        docs (list[dict]): List of documents,
             - 'project_id' (str): Clear identifier for the project.
             - 'source_path' (str): Path to the original document.
             - 'text' (str): Full corpus of the document.
 
     Returns:
-        List[Dict]: List of chunk dictionaries:
+        list[dict]: List of chunk dictionaries:
             - 'id' (str): Unique chunk ID, e.g. 'bitcoin_0'.
             - 'project_id' (str): Project to which the chunk belongs to.
             - 'source' (str): Original document path.
@@ -80,12 +78,12 @@ def create_chunk_objects(
 
     return all_chunks
 
-def embed_chunks(chunks: List[Dict]) -> np.ndarray:
+def embed_chunks(chunks: list[dict]) -> np.ndarray:
     """
     Generates embeddings for a list of chunks using a sentence transformer.
 
     Args:
-        chunks (List[Dict]): List of chunk dictionaries with:
+        chunks (list[dict]): List of chunk dictionaries with:
             - 'text' (str): Text corpus of the chunk.
 
     Returns:
@@ -137,7 +135,7 @@ def upload_to_qdrant(client: QdrantClient, chunks, embeddings: np.ndarray, colle
 
     Args:
         client (QdrantClient): Pre-defined Qdrant client.
-        chunks (List[Dict]): List of chunk dictionaries:
+        chunks (list[dict]): List of chunk dictionaries:
             - 'chunk_index' (int): Position of the chunk in the document.
             - 'project_id' (str): Identifier of the project.
             - 'source' (str): Original document path.

@@ -1,5 +1,5 @@
 **Example user queries:**
-- ?Give me a high-level overview of Project X from the whitepaper.?
-- ?Explain the token supply and emission schedule of Project Y and mention where in the docs this is described.?
-- ?Compare the utility of the token in Project A vs Project B.?
-- ?Generate a diagram-like image showing the token distribution and staking flow for Project X.?
+- How ist Ethereum different from Bitcoin?
+- How does lending and borrowing work on Aave?
+- Can you explain the oracle infrastructure of Chainlink and show me an image of it?
+- What is the token supply difference between Ethereum and Solana?
