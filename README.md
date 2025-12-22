@@ -3,11 +3,12 @@
 ```text
 project_root/
   data/
-    raw_pdfs/       # downloaded whitepapers
+    raw_pdfs/            # Downloaded whitepapers
   src/
-    corpus.py       # loading and cleaning docs -> Person 1
-    rag.py          # chunking + embeddings + retrieval -> Person 2
-    pipeline.py     # LLM pipeline (analysis ? answer ? review) -> Person 3
-    fine_tuning.py  # Optional: fine-tuning logic (train + load) -> Person 3
-    imaging.py      # image generation tool -> Person 4
-  main.ipynb        # final demo + explanations
+    corpus.py            # Loading and cleaning docs
+    rag.py               # Chunking, embeddings, retrieval
+    pipeline.py          # LLM pipeline (analysis ? answer ? review)
+    imaging.py           # Image generation tool
+  Crypto_Demo.ipynb      # Demo with explanations
+  Crypto_Demo_Image.png  # Generated image as PNG (in case it's not visible in the demo notebook)
+  OpenAI_API.txt         # txt file for the OpenAI API key (needed for image generation, currently the file contains a placeholder)

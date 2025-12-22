@@ -1,5 +1,0 @@
-**Example user queries:**
-- How ist Ethereum different from Bitcoin?
-- How does lending and borrowing work on Aave?
-- Can you explain the oracle infrastructure of Chainlink and show me an image of it?
-- What is the token supply difference between Ethereum and Solana?
