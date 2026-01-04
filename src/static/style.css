@@ -1,0 +1,349 @@
+/*
+ * style.css - Stylesheet for Crypto Whitepaper Q&A Application
+ * =============================================================
+ * 
+ * Classic dark mode color theme with neutral tones.
+ * 
+ * Color Palette:
+ * - Background (dark):    #121212 (near black)
+ * - Surface (cards):      #1e1e1e (dark gray)
+ * - Primary accent:       #e0e0e0 (light gray)
+ * - Text primary:         #f5f5f5 (off-white)
+ * - Text secondary:       #888888 (medium gray)
+ * - Borders:              #333333 (dark gray)
+ * - Accent highlight:     #ffffff (white)
+ */
+
+
+/* ---------------------------------------------------------------------------
+ * CSS Reset & Base Styles
+ * ---------------------------------------------------------------------------
+ */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #121212;
+    color: #f5f5f5;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Typography
+ * ---------------------------------------------------------------------------
+ */
+
+h1 {
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #888;
+    margin-bottom: 1rem;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Projects List Display
+ * ---------------------------------------------------------------------------
+ */
+
+.projects-list {
+    background: #1e1e1e;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+    border: 1px solid #333;
+}
+
+.projects-label {
+    color: #888;
+    margin-right: 0.5rem;
+}
+
+#projects-display {
+    color: #e0e0e0;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Input Section
+ * ---------------------------------------------------------------------------
+ */
+
+.input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+textarea {
+    width: 100%;
+    height: 100px;
+    padding: 1rem;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: #1e1e1e;
+    color: #f5f5f5;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #888;
+}
+
+button {
+    padding: 1rem 2rem;
+    background: #f5f5f5;
+    color: #121212;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+button:hover {
+    background: #ffffff;
+}
+
+button:disabled {
+    background: #555;
+    color: #888;
+    cursor: not-allowed;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Loading Indicator
+ * ---------------------------------------------------------------------------
+ */
+
+.loading {
+    color: #e0e0e0;
+    padding: 1rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #333;
+    border-top-color: #e0e0e0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Results Section
+ * ---------------------------------------------------------------------------
+ */
+
+.result {
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #333;
+}
+
+.result h2 {
+    color: #ffffff;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.result h3 {
+    color: #888;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+#answer {
+    line-height: 1.6;
+    white-space: pre-wrap;
+    color: #e0e0e0;
+}
+
+#citations {
+    list-style: none;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+#citations li {
+    padding: 0.3rem 0;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+#citations li:last-child {
+    border-bottom: none;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Upload Section
+ * ---------------------------------------------------------------------------
+ */
+
+.upload-section {
+    margin-top: 2rem;
+    border-top: 1px solid #333;
+    padding-top: 2rem;
+}
+
+.upload-toggle {
+    background: transparent;
+    border: 1px solid #333;
+    color: #888;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upload-toggle:hover {
+    border-color: #888;
+    color: #e0e0e0;
+    background: transparent;
+}
+
+#upload-toggle-icon {
+    font-size: 1.2rem;
+    font-weight: bold;
+    width: 1.5rem;
+}
+
+.upload-form {
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background: #1e1e1e;
+    border-radius: 8px;
+    border: 1px solid #333;
+}
+
+.upload-instructions {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: #121212;
+    color: #f5f5f5;
+    font-size: 1rem;
+}
+
+.form-group input[type="text"]:focus {
+    outline: none;
+    border-color: #888;
+}
+
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px dashed #333;
+    border-radius: 8px;
+    background: #121212;
+    color: #888;
+    cursor: pointer;
+}
+
+.form-group input[type="file"]:hover {
+    border-color: #888;
+}
+
+.upload-btn {
+    background: #333;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    margin-top: 0.5rem;
+}
+
+.upload-btn:hover {
+    background: #444;
+    color: #ffffff;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Upload Status Messages
+ * ---------------------------------------------------------------------------
+ */
+
+.upload-status {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.upload-status.success {
+    background: rgba(100, 200, 100, 0.1);
+    color: #6bc46b;
+    border: 1px solid #4a9c4a;
+}
+
+.upload-status.error {
+    background: rgba(200, 100, 100, 0.1);
+    color: #c46b6b;
+    border: 1px solid #9c4a4a;
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Utility Classes
+ * ---------------------------------------------------------------------------
+ */
+
+.hidden {
+    display: none;
+}

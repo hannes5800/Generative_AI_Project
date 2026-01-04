@@ -1,0 +1,300 @@
+<!--
+index.html - Main Frontend Template for Crypto Whitepaper Q&A
+==============================================================
+
+Features:
+- Question input with project-filtered retrieval
+- PDF upload form with project name input
+- Collapsible upload section to keep UI clean
+- Dynamic project list that updates after upload
+
+Template Variables (from Flask):
+- projects: List of available project names for display
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Whitepaper Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <h1>Crypto Whitepaper Assistant</h1>
+        <p class="subtitle">Ask me anything about your uploaded whitepapers</p>
+        
+        <!-- 
+        Available Projects Display
+        ==========================
+        Shows which projects are currently indexed and searchable.
+        Updates dynamically after new uploads.
+        -->
+        <div class="projects-list">
+            <span class="projects-label">Available projects:</span>
+            <span id="projects-display">
+                {% if projects %}
+                    {{ projects | join(', ') }}
+                {% else %}
+                    No projects yet - upload a whitepaper below
+                {% endif %}
+            </span>
+        </div>
+        
+        <!-- 
+        Question Input Section
+        ======================
+        Main interface for asking questions.
+        -->
+        <div class="input-section">
+            <textarea 
+                id="question" 
+                placeholder="Enter your question here... (e.g., 'How does Solana achieve consensus?')"
+                aria-label="Question input"
+            ></textarea>
+            <button id="submit-btn" onclick="askQuestion()">
+                Ask Question
+            </button>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading hidden">
+            <span class="spinner"></span>
+            Generating answer...
+        </div>
+        
+        <!-- Results Section -->
+        <div id="result" class="result hidden">
+            <h2>Answer</h2>
+            <div id="answer"></div>
+            
+            <h3>Sources</h3>
+            <ul id="citations"></ul>
+        </div>
+        
+        <!-- 
+        Upload Section
+        ==============
+        Collapsible section for uploading new PDF whitepapers.
+        Keeps the main UI clean while providing upload functionality.
+        -->
+        <div class="upload-section">
+            <button class="upload-toggle" onclick="toggleUpload()">
+                <span id="upload-toggle-icon">+</span> Upload New Whitepaper
+            </button>
+            
+            <div id="upload-form" class="upload-form hidden">
+                <p class="upload-instructions">
+                    Upload a PDF whitepaper to add it to the knowledge base.
+                    The project name will be used to organize and filter results.
+                </p>
+                
+                <!-- 
+                File Upload Form
+                ================
+                Uses multipart/form-data for file upload.
+                Project name is required and will create a subdirectory.
+                -->
+                <form id="pdf-upload-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="project_name">Project Name:</label>
+                        <input 
+                            type="text" 
+                            id="project_name" 
+                            name="project_name" 
+                            placeholder="e.g., cardano, polkadot, uniswap"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="file">PDF File:</label>
+                        <input 
+                            type="file" 
+                            id="file" 
+                            name="file" 
+                            accept=".pdf"
+                            required
+                        >
+                    </div>
+                    
+                    <button type="submit" class="upload-btn">
+                        Upload & Index
+                    </button>
+                </form>
+                
+                <!-- Upload Status Messages -->
+                <div id="upload-status" class="upload-status hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * askQuestion - Handle question submission
+         * 
+         * Sends the question to /ask endpoint and displays the response.
+         */
+        async function askQuestion() {
+            const questionInput = document.getElementById("question");
+            const loading = document.getElementById("loading");
+            const result = document.getElementById("result");
+            const answerDiv = document.getElementById("answer");
+            const citationsList = document.getElementById("citations");
+            
+            const question = questionInput.value;
+            
+            // Validate: Don't submit empty questions
+            if (!question.trim()) {
+                return;
+            }
+            
+            // Update UI state
+            loading.classList.remove("hidden");
+            result.classList.add("hidden");
+            
+            try {
+                const response = await fetch("/ask", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    answerDiv.textContent = "Error: " + data.error;
+                } else {
+                    answerDiv.textContent = data.answer;
+                    
+                    // Display citations
+                    citationsList.innerHTML = "";
+                    data.citations.forEach(citation => {
+                        const li = document.createElement("li");
+                        li.textContent = `Chunk ${citation.chunk_number}: ${citation.project || "unknown"}`;
+                        citationsList.appendChild(li);
+                    });
+                }
+                
+                result.classList.remove("hidden");
+                
+            } catch (error) {
+                answerDiv.textContent = "Connection error: " + error.message;
+                result.classList.remove("hidden");
+            } finally {
+                loading.classList.add("hidden");
+            }
+        }
+        
+        /**
+         * toggleUpload - Show/hide the upload form
+         * 
+         * Toggles visibility and updates the +/- icon.
+         */
+        function toggleUpload() {
+            const form = document.getElementById("upload-form");
+            const icon = document.getElementById("upload-toggle-icon");
+            
+            if (form.classList.contains("hidden")) {
+                form.classList.remove("hidden");
+                icon.textContent = "−";  // minus sign
+            } else {
+                form.classList.add("hidden");
+                icon.textContent = "+";
+            }
+        }
+        
+        /**
+         * refreshProjects - Update the projects list display
+         * 
+         * Fetches the current list of projects from the server
+         * and updates the display. Called after successful upload.
+         */
+        async function refreshProjects() {
+            try {
+                const response = await fetch("/projects");
+                const data = await response.json();
+                
+                const display = document.getElementById("projects-display");
+                if (data.projects && data.projects.length > 0) {
+                    display.textContent = data.projects.join(", ");
+                } else {
+                    display.textContent = "No projects yet - upload a whitepaper below";
+                }
+            } catch (error) {
+                console.error("Failed to refresh projects:", error);
+            }
+        }
+        
+        /**
+         * Handle PDF Upload Form Submission
+         * 
+         * Uses FormData to send file + project name to /upload endpoint.
+         * Shows status messages and refreshes project list on success.
+         */
+        document.getElementById("pdf-upload-form").addEventListener("submit", async function(event) {
+            event.preventDefault();  // Prevent default form submission
+            
+            const form = event.target;
+            const statusDiv = document.getElementById("upload-status");
+            const submitBtn = form.querySelector("button[type='submit']");
+            
+            // Create FormData from the form
+            const formData = new FormData(form);
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Uploading...";
+            statusDiv.classList.remove("hidden");
+            statusDiv.className = "upload-status";  // Reset classes
+            statusDiv.textContent = "Processing PDF...";
+            
+            try {
+                const response = await fetch("/upload", {
+                    method: "POST",
+                    body: formData  // Don't set Content-Type header - browser sets it with boundary
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Success - show message and refresh projects
+                    statusDiv.classList.add("success");
+                    statusDiv.textContent = `✓ ${data.message} (${data.chunks_added} chunks created)`;
+                    
+                    // Clear form
+                    form.reset();
+                    
+                    // Refresh the projects list
+                    await refreshProjects();
+                    
+                } else {
+                    // Error from server
+                    statusDiv.classList.add("error");
+                    statusDiv.textContent = `✗ Error: ${data.error}`;
+                }
+                
+            } catch (error) {
+                // Network or other error
+                statusDiv.classList.add("error");
+                statusDiv.textContent = `✗ Upload failed: ${error.message}`;
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Upload & Index";
+            }
+        });
+        
+        /**
+         * Enter key handler for question submission
+         */
+        document.getElementById("question").addEventListener("keydown", function(event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                askQuestion();
+            }
+        });
+    </script>
+</body>
+</html>
