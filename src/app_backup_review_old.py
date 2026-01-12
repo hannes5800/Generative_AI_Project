@@ -26,7 +26,6 @@ Dependencies:
 """
 
 import os
-import re
 from flask import Flask, render_template, request, jsonify
 from werkzeug.utils import secure_filename
 from corpus import load_corpus, extract_pdf, clean_text
@@ -61,57 +60,6 @@ ALLOWED_EXTENSIONS = {"pdf"}
 
 # Maximum file size (16 MB)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
-
-
-# ---------------------------------------------------------------------------
-# Helper Functions
-# ---------------------------------------------------------------------------
-
-def clean_answer_text(text: str) -> str:
-    """
-    Remove chunk references from the answer text for cleaner output.
-    
-    Removes patterns like:
-    - [Chunk 1]
-    - (Chunk 2)
-    - Chunk 3
-    - [Chunks 1 & 2]
-    - (as detailed in Chunk 2)
-    - according to Chunk 1
-    - see Chunk 1
-    - referencing Chunk 3
-    
-    Args:
-        text: The answer text with chunk references
-        
-    Returns:
-        Cleaned text without chunk references
-    """
-    # Remove bracketed chunk references: [Chunk 1], [Chunks 1 & 2], [Chunk 1, 2]
-    text = re.sub(r'\[Chunks?\s*[\d\s,&]+\]', '', text)
-    
-    # Remove parenthetical chunk references: (Chunk 1), (as detailed in Chunk 2)
-    text = re.sub(r'\([^)]*Chunks?\s*[\d\s,&]+[^)]*\)', '', text)
-    
-    # Remove inline references: "according to Chunk 1", "see Chunk 1", "referencing Chunk 3"
-    text = re.sub(r'(?:according to|as described in|as detailed in|as explained in|as highlighted in|as mentioned in|see|referencing|from)\s+Chunks?\s*[\d\s,&]+\.?', '', text, flags=re.IGNORECASE)
-    
-    # Remove standalone "Chunk X" references
-    text = re.sub(r'\bChunks?\s*[\d\s,&]+\b', '', text)
-
-    # Remove any remaining asterisks, (when LLM tries to return markdown)
-    text = re.sub(r'\*+', '', text)
-
-    # Remove empty parentheses left behind
-    text = re.sub(r'\(\s*,?\s*\)', '', text)
-    
-    # Clean up extra whitespace
-    text = re.sub(r'  +', ' ', text)  # Multiple spaces to single
-    text = re.sub(r' +([.,])', r'\1', text)  # Space before punctuation
-    text = re.sub(r'\n +', '\n', text)  # Leading spaces after newline
-    text = re.sub(r' +\n', '\n', text)  # Trailing spaces before newline
-    
-    return text.strip()
 
 # ---------------------------------------------------------------------------
 # Global State
@@ -517,8 +465,6 @@ def ask():
     # Step 3b: Optional review step for higher quality answers
     if high_quality_mode:
         result = review_answer(question, chunks, result, use_llm=True)
-        # Clean up chunk references from the reviewed answer for cleaner output
-        result["answer_text"] = clean_answer_text(result["answer_text"])
     
     # Step 4: Generate image if image mode is enabled
     image_url = None

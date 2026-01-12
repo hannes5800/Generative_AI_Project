@@ -16,14 +16,17 @@ Template Variables (from Flask):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Whitepaper Assistant</title>
+    <title>Crypto Whitepaper Q&A</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
         <!-- Header Section -->
-        <h1>Crypto Whitepaper Assistant</h1>
-        <p class="subtitle">Ask me anything about your uploaded whitepapers</p>
+        <h1>Crypto Whitepaper Q&A</h1>
+        <p class="subtitle">
+            Ask me anything about your uploaded whitepapers
+            <span class="tooltip-icon" data-tooltip="Project names must be spelled as they appear in the 'Available projects' list above. For example: 'bitcoin' not 'bitcin' or 'BTC'. The system is not case sensitive but it will match your question against these exact project name spelling.">ⓘ</span>
+        </p>
         
         <!-- 
         Available Projects Display
@@ -53,6 +56,30 @@ Template Variables (from Flask):
                 placeholder="Enter your question here... (e.g., 'How does Solana achieve consensus?')"
                 aria-label="Question input"
             ></textarea>
+            
+            <!-- Toggle Buttons Row -->
+            <div class="toggles-row">
+                <!-- Image Mode Toggle -->
+                <div class="toggle-container">
+                    <label class="toggle">
+                        <input type="checkbox" id="image-mode-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Thematic image</span>
+                    <span class="tooltip-icon" data-tooltip="Your Open AI key must be placed in OpenAI_API.txt for this mode to work. Creates a DALL-E 3 image visualizing a fantasy civilization inspired by the crypto project's philosophy. Comparison questions will cause images of both civilizations contrasting in one image. Costs ~$0.04 per image. Takes ~10-15 seconds.">ⓘ</span>
+                </div>
+                
+                <!-- High Quality Mode Toggle -->
+                <div class="toggle-container">
+                    <label class="toggle">
+                        <input type="checkbox" id="high-quality-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">High quality answering</span>
+                    <span class="tooltip-icon" data-tooltip="Runs a second LLM pass to review and improve the answer. Checks for consistency with source chunks, improves clarity, and removes unsupported claims. Removes all chunk references and markdown artifacts. Doubles response time.">ⓘ</span>
+                </div>
+            </div>
+            
             <button id="submit-btn" onclick="askQuestion()">
                 Ask Question
             </button>
@@ -66,6 +93,11 @@ Template Variables (from Flask):
         
         <!-- Results Section -->
         <div id="result" class="result hidden">
+            <!-- Thematic Image (if generated) -->
+            <div id="image-container" class="image-container hidden">
+                <img id="generated-image" src="" alt="Thematic visualization">
+            </div>
+            
             <h2>Answer</h2>
             <div id="answer"></div>
             
@@ -87,7 +119,7 @@ Template Variables (from Flask):
             <div id="upload-form" class="upload-form hidden">
                 <p class="upload-instructions">
                     Upload a PDF whitepaper to add it to the knowledge base.
-                    The project name will be used to organize and filter results.
+                    <span class="tooltip-icon" data-tooltip="The project name you enter should match how you want to reference it in questions. For best results, use simple lowercase names like 'cardano' or 'polkadot'. This name will appear in the 'Available projects' list.">ⓘ</span>
                 </p>
                 
                 <!-- 
@@ -138,12 +170,18 @@ Template Variables (from Flask):
          */
         async function askQuestion() {
             const questionInput = document.getElementById("question");
+            const imageModeToggle = document.getElementById("image-mode-toggle");
+            const highQualityToggle = document.getElementById("high-quality-toggle");
             const loading = document.getElementById("loading");
             const result = document.getElementById("result");
             const answerDiv = document.getElementById("answer");
             const citationsList = document.getElementById("citations");
+            const imageContainer = document.getElementById("image-container");
+            const generatedImage = document.getElementById("generated-image");
             
             const question = questionInput.value;
+            const imageMode = imageModeToggle.checked;
+            const highQualityMode = highQualityToggle.checked;
             
             // Validate: Don't submit empty questions
             if (!question.trim()) {
@@ -153,12 +191,25 @@ Template Variables (from Flask):
             // Update UI state
             loading.classList.remove("hidden");
             result.classList.add("hidden");
+            imageContainer.classList.add("hidden");
+            
+            // Update loading message based on selected modes
+            const loadingText = document.querySelector(".loading");
+            let loadingMessage = "Generating answer";
+            if (highQualityMode) loadingMessage += " (with review)";
+            if (imageMode) loadingMessage += " and image";
+            loadingMessage += "...";
+            loadingText.innerHTML = '<span class="spinner"></span> ' + loadingMessage;
             
             try {
                 const response = await fetch("/ask", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ question: question })
+                    body: JSON.stringify({ 
+                        question: question,
+                        image_mode: imageMode,
+                        high_quality_mode: highQualityMode
+                    })
                 });
                 
                 const data = await response.json();
@@ -166,7 +217,16 @@ Template Variables (from Flask):
                 if (data.error) {
                     answerDiv.textContent = "Error: " + data.error;
                 } else {
+                    // Display the generated answer
                     answerDiv.textContent = data.answer;
+                    
+                    // Display image if generated
+                    if (data.image_url) {
+                        generatedImage.src = data.image_url;
+                        imageContainer.classList.remove("hidden");
+                    } else {
+                        imageContainer.classList.add("hidden");
+                    }
                     
                     // Display citations
                     citationsList.innerHTML = "";
