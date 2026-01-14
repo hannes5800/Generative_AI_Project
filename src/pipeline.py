@@ -7,7 +7,8 @@ LMSTUDIO_API_KEY = "not-needed"
 # Names of the models used in LM Studio.
 BASE_MODEL_NAME = "meta-llama-3-8b-instruct"
 FINETUNED_MODEL_NAME = "theia-llama-3.1-8b-v1"
-# Hardcoded list of default projects to look for in questions -> I don't use this anymore because its unfitting for dynamic app design
+# Hardcoded list of default projects to look for in questions 
+# NOT USED ANYMORE because its unfitting for dynamic app design
 DEFAULT_PROJECTS = ["bitcoin", "ethereum", "ethereum_eip_150", "solana", "chainlink", "aave"]
 
 # Type alias for a retrieved text chunk

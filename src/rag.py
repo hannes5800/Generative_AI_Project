@@ -202,7 +202,7 @@ def retrieve_rag(
     model = SentenceTransformer("BAAI/bge-small-en-v1.5")
     question_embedding = model.encode(question).tolist()
 
-    # --- Handle comparison queries (multiple projects) ---
+    # Handle comparison queries (multiple projects)
     # When comparing projects, we retrieve chunks separately for each project
     # to ensure balanced representation. Otherwise one project might dominate.
     if project_filter and len(project_filter) > 1:
@@ -244,7 +244,7 @@ def retrieve_rag(
         all_results.sort(key=lambda x: x["score"], reverse=True)
         return all_results[:top_k]
 
-    # --- Handle single project or no filter ---
+    # Handle single project or no filter
     qdrant_filter = None
     if project_filter and len(project_filter) == 1:
         qdrant_filter = Filter(

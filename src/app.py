@@ -1,6 +1,5 @@
 """
 Flask Web Application for Crypto Whitepaper Q&A System
-=======================================================
 
 This module serves as the main entry point for the web application.
 It connects the RAG (Retrieval-Augmented Generation) pipeline with
@@ -44,9 +43,7 @@ from pipeline import analyze_question, generate_answer, review_answer, call_llm_
 # __name__ tells Flask where to look for templates and static files
 app = Flask(__name__)
 
-# ---------------------------------------------------------------------------
 # Configuration
-# ---------------------------------------------------------------------------
 
 # Path to the data directory where PDFs are stored
 # Using ../data because app.py is in src/ folder
@@ -63,9 +60,7 @@ ALLOWED_EXTENSIONS = {"pdf"}
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
 
-# ---------------------------------------------------------------------------
-# Helper Functions
-# ---------------------------------------------------------------------------
+# Helper functions
 
 def clean_answer_text(text: str) -> str:
     """
@@ -113,17 +108,15 @@ def clean_answer_text(text: str) -> str:
     
     return text.strip()
 
-# ---------------------------------------------------------------------------
-# Global State
-# ---------------------------------------------------------------------------
-# We store the Qdrant client and chunks globally so they persist across requests.
-# In a production setting, you might use a proper database connection pool
-# or a persistent Qdrant instance (Docker) instead of in-memory storage.
+# Global state
+# Qdrant client and chunks are stored globally so they persist across requests
+# In a production setting, a proper database connection pool might be used
+# (or a persistent Qdrant instance (Docker) instead of in-memory storage)
 
 client = None          # Will hold the Qdrant client after initialization
 all_chunks = []        # Store all chunks for potential re-indexing
 all_embeddings = None  # Store embeddings array
-COLLECTION = "crypto_whitepapers"  # Name of our vector collection
+COLLECTION = "crypto_whitepapers"  # Name of vector collection
 
 
 def allowed_file(filename: str) -> bool:
@@ -165,7 +158,7 @@ def init_rag():
     
     # Step 2: Create chunks
     # Chunking splits long documents into smaller pieces (600 words with 100 overlap)
-    # This improves retrieval accuracy since we can find specific relevant passages
+    # This improves retrieval accuracy since specific relevant passages can be found
     print("Creating text chunks...")
     all_chunks = create_chunk_objects(docs)
     print(f"  → Created {len(all_chunks)} chunks")
@@ -193,9 +186,7 @@ def init_rag():
     print("=" * 50)
 
 
-# ---------------------------------------------------------------------------
 # Thematic Image Generation
-# ---------------------------------------------------------------------------
 
 # Descriptions of each project's philosophy for image generation
 # These descriptions focus on VISUAL CONCEPTS - NO crypto/blockchain/finance words
@@ -247,7 +238,7 @@ def generate_theme_for_unknown_project(project_name: str, chunks: list[dict]) ->
     project_chunks = [c for c in chunks if c.get("project", "").lower() == project_name.lower()]
     
     if not project_chunks:
-        # No chunks found - return generic fallback
+        # No chunks found -> return generic fallback
         return {
             "philosophy": "innovation and community",
             "visual": "a serene floating city with glass spires and waterfall gardens, soft blue and white tones"
@@ -337,7 +328,7 @@ def generate_thematic_image(projects: list[str], question_type: str, chunks: lis
             print(f"Generating theme for unknown project: {project_name}")
             return generate_theme_for_unknown_project(project_name, chunks)
     
-    # Base style instructions - AVOID all crypto-related words
+    # Base style instructions -> AVOID all crypto-related words
     style_guide = """
     Style: Epic concept art, highly detailed, cinematic lighting, 4K quality, artstation trending.
     This is a FANTASY CIVILIZATION - NOT related to technology, finance, or digital currency.
@@ -431,9 +422,7 @@ def get_available_projects() -> list[str]:
     return sorted(projects)
 
 
-# ---------------------------------------------------------------------------
 # Routes
-# ---------------------------------------------------------------------------
 
 @app.route("/")
 def index():
@@ -487,7 +476,7 @@ def ask():
     # This detects which projects are mentioned (bitcoin, ethereum, etc.)
     # and classifies the question type (overview, comparison, risk, tokenomics)
     # 
-    # We pass the dynamically detected projects from our PDF folder
+    # The dynamically detected projects from the PDF folder are passed
     # so any newly uploaded project is automatically recognized
     available = get_available_projects()
     analysis = analyze_question(question, available_projects=available)
@@ -496,8 +485,8 @@ def ask():
     # The question is embedded and compared against all chunk embeddings
     # Returns the top 5 most semantically similar chunks
     # 
-    # NEW: If specific projects are detected in the question, we filter
-    # the retrieval to only include chunks from those projects.
+    # If specific projects are detected in the question, the
+    # retrieval is filtered to only include chunks from those projects.
     # This prevents cross-contamination (e.g., Ethereum chunks for Solana questions)
     detected_projects = analysis.get("projects", [])
     
@@ -559,7 +548,7 @@ def upload_pdf():
     """
     global client, all_chunks, all_embeddings
     
-    # --- Validate Request ---
+    # Validate request
     
     # Check if file was included in request
     if "file" not in request.files:
@@ -583,7 +572,7 @@ def upload_pdf():
     if not allowed_file(file.filename):
         return jsonify({"error": "Only PDF files are allowed"}), 400
     
-    # --- Save File ---
+    # Save file
     
     # Save directly to raw_pdfs/ folder (no subdirectories)
     # The project_name becomes the filename: data/raw_pdfs/{project_name}.pdf
@@ -598,7 +587,7 @@ def upload_pdf():
     file.save(file_path)
     print(f"Saved uploaded file to: {file_path}")
     
-    # --- Process and Index ---
+    # Process and index 
     
     try:
         # Extract text from the PDF
@@ -655,9 +644,7 @@ def list_projects():
     return jsonify({"projects": projects})
 
 
-# ---------------------------------------------------------------------------
 # Application Entry Point
-# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     # Initialize RAG system before starting the server

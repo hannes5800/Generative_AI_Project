@@ -1,6 +1,5 @@
 <!--
 index.html - Main Frontend Template for Crypto Whitepaper Q&A
-==============================================================
 
 Features:
 - Question input with project-filtered retrieval
@@ -29,8 +28,7 @@ Template Variables (from Flask):
         </p>
         
         <!-- 
-        Available Projects Display
-        ==========================
+        Available Projects Display:
         Shows which projects are currently indexed and searchable.
         Updates dynamically after new uploads.
         -->
@@ -46,8 +44,7 @@ Template Variables (from Flask):
         </div>
         
         <!-- 
-        Question Input Section
-        ======================
+        Question Input Section:
         Main interface for asking questions.
         -->
         <div class="input-section">
@@ -106,8 +103,7 @@ Template Variables (from Flask):
         </div>
         
         <!-- 
-        Upload Section
-        ==============
+        Upload Section:
         Collapsible section for uploading new PDF whitepapers.
         Keeps the main UI clean while providing upload functionality.
         -->
@@ -123,8 +119,7 @@ Template Variables (from Flask):
                 </p>
                 
                 <!-- 
-                File Upload Form
-                ================
+                File Upload Form:
                 Uses multipart/form-data for file upload.
                 Project name is required and will create a subdirectory.
                 -->
@@ -165,7 +160,6 @@ Template Variables (from Flask):
     <script>
         /**
          * askQuestion - Handle question submission
-         * 
          * Sends the question to /ask endpoint and displays the response.
          */
         async function askQuestion() {
@@ -249,7 +243,6 @@ Template Variables (from Flask):
         
         /**
          * toggleUpload - Show/hide the upload form
-         * 
          * Toggles visibility and updates the +/- icon.
          */
         function toggleUpload() {
@@ -267,7 +260,6 @@ Template Variables (from Flask):
         
         /**
          * refreshProjects - Update the projects list display
-         * 
          * Fetches the current list of projects from the server
          * and updates the display. Called after successful upload.
          */
@@ -289,7 +281,6 @@ Template Variables (from Flask):
         
         /**
          * Handle PDF Upload Form Submission
-         * 
          * Uses FormData to send file + project name to /upload endpoint.
          * Shows status messages and refreshes project list on success.
          */
