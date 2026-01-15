@@ -3,6 +3,9 @@
 ```text
 project_root/
 │
+├── app_demo_screenshots
+│    └── comparison.png       # Comparison question asked with image generation in the app
+│    └── simple.png           # Simple question asked with image generation in the app
 ├── data/
 │   └── raw_pdfs/             # Uploaded/downloaded crypto whitepapers (PDFs)
 ├── src/
